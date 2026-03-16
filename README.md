@@ -1,3 +1,5 @@
+pip install -r requirements.txt
+
 二、各部分作用（非常重要）
 
 1 项目主文件夹
