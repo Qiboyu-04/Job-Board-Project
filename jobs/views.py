@@ -10,11 +10,26 @@ def home(request):
 
 
 def job_list(request):
-
     jobs = Job.objects.all()
 
+    query = request.GET.get('q', '')
+    selected_location = request.GET.get('location', '')
+    selected_type = request.GET.get('type', '')
+
+    if query:
+        jobs = jobs.filter(title__icontains=query)
+
+    if selected_location:
+        jobs = jobs.filter(location__icontains=selected_location)
+
+    if selected_type:
+        jobs = jobs.filter(job_type=selected_type)
+
     return render(request, "jobs/job_list.html", {
-        "jobs": jobs
+        "jobs": jobs,
+        "query": query,
+        "selected_location": selected_location,
+        "selected_type": selected_type,
     })
 
 def job_detail(request, job_id):

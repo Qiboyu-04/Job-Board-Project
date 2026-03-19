@@ -4,6 +4,21 @@
 
 <h2>Job Listings</h2>
 
+<form method="get">
+    <input type="text" name="q" placeholder="Search by title" value="{{ query }}">
+
+    <input type="text" name="location" placeholder="Search by location" value="{{ selected_location }}">
+
+    <select name="type">
+        <option value="">All Types</option>
+        <option value="intern" {% if selected_type == "intern" %}selected{% endif %}>Intern</option>
+        <option value="part-time" {% if selected_type == "part-time" %}selected{% endif %}>Part-time</option>
+        <option value="full-time" {% if selected_type == "full-time" %}selected{% endif %}>Full-time</option>
+    </select>
+
+    <button type="submit">Search</button>
+</form>
+
 <ul>
 
 {% for job in jobs %}
