@@ -1,0 +1,104 @@
+{% extends "jobs/base.html" %}
+
+{% block content %}
+<section class="py-5 bg-white mb-5">
+    <div class="container text-center py-5">
+        <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-2 mb-3">#1 Career Platform for Students</span>
+        <h1 class="display-3 fw-bold mb-4">Kickstart Your Professional Journey</h1>
+        <p class="lead text-muted mb-5 px-lg-5 mx-auto" style="max-width: 800px;">
+            Connecting talented university students and recent graduates with industry-leading companies for internships and full-time careers.
+        </p>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+            <a href="/jobs/" class="btn btn-primary btn-lg px-5 rounded-pill shadow">Explore Opportunities</a>
+            <a href="/admin/" class="btn btn-light btn-lg px-5 rounded-pill border">Post a Resume</a>
+        </div>
+    </div>
+</section>
+
+<div class="container mb-5">
+    <div class="row g-4 text-center">
+        <div class="col-md-4">
+            <div class="card h-100 border-0 hover-lift rounded-4 p-4 shadow-sm">
+                <div class="mb-3"><i class="fas fa-seedling fa-3x text-success"></i></div>
+                <h4 class="fw-bold">Internships</h4>
+                <p class="text-muted small">Gain hands-on experience and build your network before graduation.</p>
+                <a href="/jobs/?type=Internship" class="btn btn-link text-decoration-none stretched-link">Find Internships <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 hover-lift rounded-4 p-4 shadow-sm">
+                <div class="mb-3"><i class="fas fa-graduation-cap fa-3x text-primary"></i></div>
+                <h4 class="fw-bold">Graduate Roles</h4>
+                <p class="text-muted small">The perfect starting point for final-year students and fresh graduates.</p>
+                <a href="/jobs/?type=Graduate" class="btn btn-link text-decoration-none stretched-link">Browse Openings <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 border-0 hover-lift rounded-4 p-4 shadow-sm">
+                <div class="mb-3"><i class="fas fa-users fa-3x text-warning"></i></div>
+                <h4 class="fw-bold">Alumni Referrals</h4>
+                <p class="text-muted small">Connect with seniors already in the workforce for career advice.</p>
+                <a href="/jobs/" class="btn btn-link text-decoration-none stretched-link">Join Community <i class="fas fa-arrow-right ms-1"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+            <h2 class="fw-bold">Featured Opportunities</h2>
+            <p class="text-muted mb-0">Handpicked jobs from our partner companies</p>
+        </div>
+        <a href="/jobs/" class="btn btn-outline-primary rounded-pill">View All Jobs</a>
+    </div>
+
+    <div class="row g-4">
+        {% if jobs %}
+            {% for job in jobs %}
+            <div class="col-12">
+                <div class="card border-0 shadow-sm hover-lift rounded-4 overflow-hidden">
+                    <div class="card-body p-4 d-md-flex align-items-center justify-content-between">
+                        <div>
+                            <span class="badge bg-light text-dark mb-2 border">{{ job.job_type }}</span>
+                            <h5 class="fw-bold mb-1">{{ job.title }}</h5>
+                            <p class="text-primary fw-semibold mb-2 mb-md-0">{{ job.company }}</p>
+                        </div>
+                        <div class="text-md-end">
+                            <div class="text-muted small mb-3">
+                                <span class="me-3"><i class="fas fa-map-marker-alt me-1 text-danger"></i>{{ job.location }}</span>
+                                <span><i class="fas fa-calendar-alt me-1 text-warning"></i>Deadline: {{ job.deadline|date:"M d, Y" }}</span>
+                            </div>
+                            <a href="/jobs/{{ job.id }}/" class="btn btn-dark px-4 rounded-pill">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <p class="text-muted">No featured jobs at the moment. Please check back later or add some in the Admin panel.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<section class="py-5">
+    <div class="container text-center">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <h2 class="fw-bold text-primary">500+</h2>
+                <p class="text-muted">Partner Companies</p>
+            </div>
+            <div class="col-md-4 mb-3">
+                <h2 class="fw-bold text-primary">10k+</h2>
+                <p class="text-muted">Student Users</p>
+            </div>
+            <div class="col-md-4 mb-3">
+                <h2 class="fw-bold text-primary">95%</h2>
+                <p class="text-muted">Placement Rate</p>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
