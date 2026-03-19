@@ -1,0 +1,44 @@
+{% extends "jobs/base.html" %}
+
+{% block content %}
+
+<h2>{{ job.title }}</h2>
+
+<p>Company: {{ job.company }}</p>
+<p>Location: {{ job.location }}</p>
+<p>Type: {{ job.job_type }}</p>
+<p>Deadline: {{ job.deadline }}</p>
+
+{% if job.salary %}
+<p>Salary: {{ job.salary }}</p>
+{% endif %}
+
+{% if job.requirements %}
+<p>Requirements: {{ job.requirements }}</p>
+{% endif %}
+
+{% if job.description %}
+<p>Description: {{ job.description }}</p>
+{% endif %}
+
+{% if success %}
+<p style="color: green;">Application submitted successfully.</p>
+{% endif %}
+
+{% if duplicate %}
+<p style="color: red;">You have already applied for this job.</p>
+{% endif %}
+
+{% if already_applied %}
+<p style="color: blue;">You already applied for this job.</p>
+{% else %}
+<p>
+    <a href="{% url 'apply_job' job.id %}">Apply Now</a>
+</p>
+{% endif %}
+
+<p>
+    <a href="/jobs/">Back to Job Listings</a>
+</p>
+
+{% endblock %}
