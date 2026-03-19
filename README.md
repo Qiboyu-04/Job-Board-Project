@@ -214,6 +214,7 @@ python manage.py runserver
 
 启动网站：
 
+<<<<<<< HEAD
 http://127.0.0.1:8000
 
 
@@ -223,3 +224,6 @@ http://127.0.0.1:8000
 python manage.py makemigrations jobs
 python manage.py migrate
 python manage.py runserver
+=======
+http://127.0.0.1:8000
+>>>>>>> 9207b38e67297427b0ec351de4fd09ed3e228070

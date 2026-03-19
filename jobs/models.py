@@ -1,4 +1,5 @@
 from django.db import models
+<<<<<<< HEAD
 from django.contrib.auth.models import User
 from django.utils import timezone
 
@@ -105,3 +106,17 @@ class Application(models.Model):
 
     def __str__(self):
         return f"{self.student.username} 申请 {self.job.title}"
+=======
+
+class Job(models.Model):
+
+    title = models.CharField(max_length=200)
+    company = models.CharField(max_length=200)
+    location = models.CharField(max_length=200)
+    job_type = models.CharField(max_length=100)
+    description = models.TextField()
+    deadline = models.DateField()
+
+    def __str__(self):
+        return self.title
+>>>>>>> 9207b38e67297427b0ec351de4fd09ed3e228070
