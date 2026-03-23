@@ -24,9 +24,9 @@
                         <label class="form-label small fw-bold">Job Type</label>
                         <select name="type" class="form-select">
                             <option value="">All Types</option>
-                            <option value="Internship" {% if selected_type == "Internship" %}selected{% endif %}>Internship</option>
-                            <option value="Graduate" {% if selected_type == "Graduate" %}selected{% endif %}>Graduate Role</option>
-                            <option value="Full-time" {% if selected_type == "Full-time" %}selected{% endif %}>Full-time</option>
+                            <option value="intern" {% if selected_type == "intern" %}selected{% endif %}>Intern</option>
+                            <option value="part-time" {% if selected_type == "part-time" %}selected{% endif %}>Part-time</option>
+                            <option value="full-time" {% if selected_type == "full-time" %}selected{% endif %}>Full-time</option>
                         </select>
                     </div>
 

@@ -64,8 +64,26 @@
 
                     <hr class="text-muted mb-4 opacity-25">
 
+                    {% if success %}
+                    <div class="alert alert-success rounded-4" role="alert">
+                        Application submitted successfully.
+                    </div>
+                    {% endif %}
+
+                    {% if duplicate %}
+                    <div class="alert alert-danger rounded-4" role="alert">
+                        You have already applied for this job.
+                    </div>
+                    {% endif %}
+
                     <div class="d-grid gap-3">
-                        <button class="btn btn-primary btn-lg rounded-pill shadow-sm fw-bold">Apply Now</button>
+                        {% if already_applied %}
+                        <div class="alert alert-info rounded-4 mb-0" role="alert">
+                            You already applied for this job.
+                        </div>
+                        {% else %}
+                        <a href="{% url 'apply_job' job.id %}" class="btn btn-primary btn-lg rounded-pill shadow-sm fw-bold">Apply Now</a>
+                        {% endif %}
                         <button class="btn btn-outline-secondary btn-lg rounded-pill hover-lift"><i class="far fa-heart me-2"></i>Save Job</button>
                     </div>
                 </div>
