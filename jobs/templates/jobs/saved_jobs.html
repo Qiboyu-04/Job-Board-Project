@@ -1,0 +1,24 @@
+
+
+{% extends "jobs/base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">My Saved Jobs</h2>
+
+    {% if saved_jobs %}
+        {% for item in saved_jobs %}
+            <div class="card mb-3 p-3 shadow-sm">
+                <h5 class="mb-1">{{ item.job.title }}</h5>
+                <p class="text-muted mb-2">{{ item.job.company }}</p>
+
+                <a href="{% url 'job_detail' item.job.id %}" class="btn btn-sm btn-outline-primary">
+                    View Details
+                </a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No saved jobs yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -10,7 +10,10 @@
         </p>
         <div class="d-flex flex-wrap justify-content-center gap-3">
             <a href="/jobs/" class="btn btn-primary btn-lg px-5 rounded-pill shadow">Explore Opportunities</a>
-            <a href="/admin/" class="btn btn-light btn-lg px-5 rounded-pill border">Post a Resume</a>
+
+            {% if not user.is_authenticated or user.profile.user_type == 'employer' %}
+                <a href="{% url 'company_dashboard' %}" class="btn btn-light btn-lg px-5 rounded-pill border">Post a Job</a>
+            {% endif %}
         </div>
     </div>
 </section>

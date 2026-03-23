@@ -77,14 +77,26 @@
                     {% endif %}
 
                     <div class="d-grid gap-3">
-                        {% if already_applied %}
-                        <div class="alert alert-info rounded-4 mb-0" role="alert">
-                            You already applied for this job.
-                        </div>
-                        {% else %}
-                        <a href="{% url 'apply_job' job.id %}" class="btn btn-primary btn-lg rounded-pill shadow-sm fw-bold">Apply Now</a>
+                        {% if user.is_authenticated and user.profile.user_type == 'student' %}
+                            {% if already_applied %}
+                            <div class="alert alert-info rounded-4 mb-0" role="alert">
+                                You already applied for this job.
+                            </div>
+                            {% else %}
+                            <a href="{% url 'apply_job' job.id %}" class="btn btn-primary btn-lg rounded-pill shadow-sm fw-bold">Apply Now</a>
+                            {% endif %}
                         {% endif %}
-                        <button class="btn btn-outline-secondary btn-lg rounded-pill hover-lift"><i class="far fa-heart me-2"></i>Save Job</button>
+                        {% if user.is_authenticated %}
+                            {% if is_saved %}
+                                <a href="{% url 'toggle_save_job' job.id %}" class="btn btn-secondary btn-lg rounded-pill">
+                                    ❤️ Saved
+                                </a>
+                            {% else %}
+                                <a href="{% url 'toggle_save_job' job.id %}" class="btn btn-outline-secondary btn-lg rounded-pill hover-lift">
+                                    🤍 Save Job
+                                </a>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 </div>
             </div>
