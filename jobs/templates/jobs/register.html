@@ -1,14 +1,103 @@
 {% extends "jobs/base.html" %}
+
 {% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center align-items-center" style="min-height: 60vh;">
+        <div class="col-md-8 col-lg-6">
 
-<h2>Register</h2>
+            <div class="card border border-light shadow-sm rounded-4 bg-white overflow-hidden mt-4 mb-5">
+                <div class="card-body p-4 p-md-5">
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Register</button>
-</form>
+                    <div class="text-center mb-4">
+                        <div class="d-inline-flex align-items-center justify-content-center bg-success bg-opacity-10 text-success rounded-circle mb-3" style="width: 70px; height: 70px;">
+                            <i class="fas fa-user-plus fa-2x"></i>
+                        </div>
+                        <h2 class="fw-bold text-dark mb-1">Create an Account</h2>
+                        <p class="text-muted fw-normal">Join our platform to kickstart your journey</p>
+                    </div>
 
-<p><a href="{% url 'login' %}">Already have an account? Login</a></p>
+                    <form method="post" class="auth-form">
+                        {% csrf_token %}
 
+                        <div class="mb-4 text-secondary">
+                            {{ form.as_p }}
+                        </div>
+
+                        <button type="submit" class="btn btn-success btn-lg w-100 rounded-pill fw-bold shadow-sm hover-lift mt-3">
+                            Register Now <i class="fas fa-arrow-right ms-2"></i>
+                        </button>
+                    </form>
+
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <p class="text-muted mb-0">Already have an account?
+                            <a href="{% url 'login' %}" class="text-success fw-semibold text-decoration-none hover-link">
+                                Log in here
+                            </a>
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .auth-form p {
+        margin-bottom: 1.25rem;
+    }
+    .auth-form input[type="text"],
+    .auth-form input[type="password"],
+    .auth-form input[type="email"],
+    .auth-form select {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 0.5rem;
+        margin-top: 0.4rem;
+        background-color: #f8f9fa;
+        color: #212529;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, background-color 0.15s ease-in-out;
+    }
+    .auth-form input:focus,
+    .auth-form select:focus {
+        border-color: #198754; /* Bootstrap Success Green */
+        box-shadow: 0 0 0 0.25rem rgba(25, 135, 84, 0.15);
+        outline: none;
+        background-color: #ffffff;
+    }
+    .auth-form label {
+        color: #495057;
+        font-size: 0.9rem;
+        margin-bottom: 0.2rem;
+        font-weight: 600;
+        display: block;
+    }
+    /* Style Django's bulky password help texts */
+    .auth-form .helptext {
+        font-size: 0.8rem;
+        color: #6c757d;
+        display: block;
+        margin-top: 0.4rem;
+        line-height: 1.4;
+    }
+    /* Style the error lists if registration fails (e.g. passwords don't match) */
+    .auth-form ul.errorlist {
+        color: #dc3545;
+        font-size: 0.85rem;
+        padding-left: 1.2rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0;
+    }
+    .hover-lift {
+        transition: transform 0.2s ease-in-out;
+    }
+    .hover-lift:hover {
+        transform: translateY(-2px);
+    }
+    .hover-link:hover {
+        text-decoration: underline !important;
+    }
+</style>
 {% endblock %}

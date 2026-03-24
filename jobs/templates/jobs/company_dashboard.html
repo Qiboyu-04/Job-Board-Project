@@ -1,16 +1,91 @@
 {% extends "jobs/base.html" %}
+
 {% block content %}
+<div class="container py-4 py-lg-5">
 
-<h2>Company Dashboard</h2>
+    <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between mb-4 pb-3 border-bottom border-light gap-3">
+        <div class="d-flex align-items-center">
+            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-3 shadow-sm" style="width: 55px; height: 55px;">
+                <i class="fas fa-chart-pie fs-4"></i>
+            </div>
+            <div>
+                <h2 class="fw-bold mb-0 text-dark">Company Dashboard</h2>
+                <p class="text-muted mb-0 mt-1">Manage your job listings and applicants</p>
+            </div>
+        </div>
+        <div>
+            <a href="/admin/" class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm hover-lift">
+                <i class="fas fa-plus me-2"></i>Post New Job
+            </a>
+        </div>
+    </div>
 
-{% if jobs %}
-    <ul>
-    {% for job in jobs %}
-        <li>{{ job.title }}</li>
-    {% endfor %}
-    </ul>
-{% else %}
-    <p>No jobs posted yet.</p>
-{% endif %}
+    <div class="row g-4 mt-2">
+        {% if jobs %}
+            <div class="col-12">
+                <div class="d-flex flex-column gap-3">
+                    {% for job in jobs %}
+                    <div class="card border border-light shadow-sm hover-lift rounded-4 overflow-hidden bg-white">
+                        <div class="card-body p-4">
+                            <div class="d-flex flex-column flex-md-row align-items-start align-items-md-center justify-content-between">
 
+                                <div class="flex-grow-1 mb-3 mb-md-0">
+                                    <div class="d-flex align-items-center gap-3 mb-1">
+                                        <h5 class="fw-bold mb-0 text-dark">{{ job.title }}</h5>
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success-subtle rounded-pill px-2">Active</span>
+                                    </div>
+
+                                    <div class="d-flex flex-wrap gap-3 mt-2">
+                                        <span class="text-muted small"><i class="fas fa-map-marker-alt me-1 text-danger"></i>{{ job.location|default:"Location N/A" }}</span>
+                                        <span class="text-muted small"><i class="fas fa-briefcase me-1 text-primary"></i>{{ job.job_type|default:"Job Type N/A" }}</span>
+                                        <span class="text-muted small"><i class="fas fa-calendar-alt me-1 text-warning"></i>Deadline: {{ job.deadline|date:"M d, Y"|default:"N/A" }}</span>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex flex-row gap-2 ms-md-4 mt-2 mt-md-0 justify-content-end">
+                                    <a href="/jobs/{{ job.id }}/" class="btn btn-outline-secondary rounded-pill fw-semibold px-3" title="View Job Page">
+                                        <i class="fas fa-external-link-alt"></i> View
+                                    </a>
+                                    <a href="/admin/" class="btn btn-dark rounded-pill fw-semibold px-4 shadow-sm" title="Edit in Admin">
+                                        <i class="fas fa-cog me-1"></i> Manage
+                                    </a>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        {% else %}
+            <div class="col-12">
+                <div class="text-center py-5 bg-white rounded-4 shadow-sm border border-dashed border-light my-4">
+                    <div class="d-inline-flex align-items-center justify-content-center bg-light text-muted rounded-circle mb-3" style="width: 80px; height: 80px;">
+                        <i class="fas fa-bullhorn fa-2x"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2">No jobs posted yet</h4>
+                    <p class="text-muted mb-4 max-w-md mx-auto">You haven't created any job listings. Post your first opportunity to start attracting top student talent.</p>
+                    <a href="/admin/" class="btn btn-primary btn-lg rounded-pill px-5 shadow-sm hover-lift fw-bold">
+                        Post a Job <i class="fas fa-plus ms-2"></i>
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    .hover-lift {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+    .hover-lift:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.05) !important;
+    }
+    .border-dashed {
+        border-style: dashed !important;
+        border-width: 2px !important;
+    }
+</style>
 {% endblock %}
