@@ -21,12 +21,26 @@ def home(request):
 def register_view(request):
     if request.method == 'POST':
         form = UserRegisterForm(request.POST)
+
         if form.is_valid():
             user = form.save()
+
+            user_type = request.POST.get('user_type')
+            
+            profile = Profile.objects.get(user=user)
+            profile.user_type = request.POST.get('user_type')
+            profile.save()
+
+            if user_type in ['employer', 'admin']:
+                user.is_staff = True
+                user.save()
+
             login(request, user)
             return redirect_by_user_type(user)
+
     else:
         form = UserRegisterForm()
+
     return render(request, 'jobs/register.html', {'form': form})
 
 
