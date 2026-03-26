@@ -42,7 +42,7 @@ class JobAdmin(admin.ModelAdmin):
         # staff 新增 Job 时自动关联公司
         if request.user.is_staff and not request.user.is_superuser:
             try:
-                company = Company.objects.get(created_by=request.user)
+                company = Company.objects.get(user=request.user)
                 obj.company = company
             except Company.DoesNotExist:
                 pass

@@ -44,6 +44,7 @@ class Profile(models.Model):
 
 class Company(models.Model):
    
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True)
     name = models.CharField(max_length=200, unique=True)
     description = models.TextField(blank=True)
     website = models.URLField(blank=True)

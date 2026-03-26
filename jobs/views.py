@@ -2,8 +2,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
+from django.contrib.auth.models import Group, Permission
 
-from .models import Job, Application, Profile, SavedJob
+from .models import Job, Application, Profile, SavedJob, Company
 from .forms import ApplicationForm, UserRegisterForm, UserLoginForm
 
 
@@ -26,14 +27,26 @@ def register_view(request):
             user = form.save()
 
             user_type = request.POST.get('user_type')
-            
+
             profile = Profile.objects.get(user=user)
-            profile.user_type = request.POST.get('user_type')
+            profile.user_type = user_type
             profile.save()
+
+            if user_type == 'employer':
+                Company.objects.get_or_create(
+                    user=user,
+                    defaults={
+                        'name': f"{user.username}'s Company"
+                    }
+                )
 
             if user_type in ['employer', 'admin']:
                 user.is_staff = True
                 user.save()
+
+                group, _ = Group.objects.get_or_create(name='Qualified Company')
+
+                user.groups.add(group)
 
             login(request, user)
             return redirect_by_user_type(user)
