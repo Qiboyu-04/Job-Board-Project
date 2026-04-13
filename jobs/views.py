@@ -36,7 +36,8 @@ def register_view(request):
                 Company.objects.get_or_create(
                     user=user,
                     defaults={
-                        'name': f"{user.username}'s Company"
+                        'name': f"{user.username}'s Company",
+                        'created_by': user,
                     }
                 )
 

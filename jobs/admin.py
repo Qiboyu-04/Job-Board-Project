@@ -13,9 +13,8 @@ class JobAdmin(admin.ModelAdmin):
         if request.user.is_superuser:
             return qs
         elif request.user.is_staff:
-            # 找到 staff 对应公司
             try:
-                company = Company.objects.get(created_by=request.user)
+                company = Company.objects.get(user=request.user)
                 return qs.filter(company=company)
             except Company.DoesNotExist:
                 return qs.none()
@@ -26,24 +25,24 @@ class JobAdmin(admin.ModelAdmin):
             return True
         if obj is None:
             return True
-        return obj.company and obj.company.created_by == request.user
+        return obj.company and obj.company.user == request.user
 
     def has_delete_permission(self, request, obj=None):
         if request.user.is_superuser:
             return True
         if obj is None:
             return True
-        return obj.company and obj.company.created_by == request.user
+        return obj.company and obj.company.user == request.user
 
     def has_add_permission(self, request):
         return request.user.is_superuser or request.user.is_staff
 
     def save_model(self, request, obj, form, change):
-        # staff 新增 Job 时自动关联公司
         if request.user.is_staff and not request.user.is_superuser:
             try:
                 company = Company.objects.get(user=request.user)
                 obj.company = company
+                obj.posted_by = request.user
             except Company.DoesNotExist:
                 pass
         super().save_model(request, obj, form, change)
@@ -51,7 +50,7 @@ class JobAdmin(admin.ModelAdmin):
     def get_readonly_fields(self, request, obj=None):
         ro_fields = []
         if request.user.is_staff and not request.user.is_superuser:
-            ro_fields.append('company')  # staff 不允许修改 company
+            ro_fields.append('company')
         return ro_fields
 
 # ---------- ApplicationAdmin ----------
@@ -68,7 +67,7 @@ class ApplicationAdmin(admin.ModelAdmin):
             return qs
         elif request.user.is_staff:
             try:
-                company = Company.objects.get(created_by=request.user)
+                company = Company.objects.get(user=request.user)
                 return qs.filter(job__company=company)
             except Company.DoesNotExist:
                 return qs.none()
