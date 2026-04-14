@@ -7,7 +7,7 @@ User = get_user_model()
 
 # ---------- JobAdmin ----------
 class JobAdmin(admin.ModelAdmin):
-    list_display = ('title', 'company', 'job_type', 'status', 'posted_at', 'deadline', 'is_expired')
+    list_display = ('title', 'company', 'job_type', 'status', 'posted_at', 'deadline', 'is_within_deadline')
     list_filter = ('status', 'job_type', 'company', 'posted_at')
     search_fields = ('title', 'description', 'company__name', 'location')
     date_hierarchy = 'posted_at'
@@ -18,6 +18,31 @@ class JobAdmin(admin.ModelAdmin):
         ('Status & Time', {'fields': ('status', 'deadline', 'posted_by', 'posted_at', 'updated_at')}),
     )
     actions = ['approve_jobs', 'reject_jobs']
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(posted_by=request.user)
+
+    def is_within_deadline(self, obj):
+        return not obj.is_expired()
+    is_within_deadline.boolean = True
+    is_within_deadline.short_description = 'Deadline Active'
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return True
+        return obj.posted_by == request.user
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return True
+        return obj.posted_by == request.user
 
     def approve_jobs(self, request, queryset):
         queryset.update(status='approved')
@@ -42,6 +67,26 @@ class ApplicationAdmin(admin.ModelAdmin):
         ('Status & Time', {'fields': ('status', 'applied_at', 'updated_at')}),
     )
     actions = ['mark_as_reviewed', 'mark_as_interview', 'mark_as_accepted']
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        if request.user.is_superuser:
+            return qs
+        return qs.filter(job__posted_by=request.user)
+
+    def has_change_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return True
+        return obj.job.posted_by == request.user
+
+    def has_delete_permission(self, request, obj=None):
+        if request.user.is_superuser:
+            return True
+        if obj is None:
+            return True
+        return obj.job.posted_by == request.user
 
     def mark_as_reviewed(self, request, queryset):
         queryset.update(status='reviewed')
