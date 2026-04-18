@@ -100,7 +100,6 @@ def job_list(request):
         "selected_type": selected_type,
     })
 
-@login_required(login_url='login')
 def job_detail(request, job_id):
     job = get_object_or_404(Job, pk=job_id)
 

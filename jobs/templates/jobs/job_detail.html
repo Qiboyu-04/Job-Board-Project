@@ -123,6 +123,10 @@
                                 Apply Now <i class="fas fa-paper-plane ms-2 small"></i>
                             </a>
                             {% endif %}
+                        {% else %}
+                            <a href="{% url 'login' %}?next={% url 'apply_job' job.id %}" class="btn btn-primary btn-lg rounded-pill shadow-sm fw-bold hover-lift">
+                                Apply Now <i class="fas fa-paper-plane ms-2 small"></i>
+                            </a>
                         {% endif %}
 
                         {% if user.is_authenticated %}
@@ -135,6 +139,10 @@
                                     <i class="far fa-heart me-2"></i> Save Job
                                 </a>
                             {% endif %}
+                        {% else %}
+                            <a href="{% url 'login' %}?next={% url 'toggle_save_job' job.id %}" class="btn btn-outline-secondary btn-lg rounded-pill fw-semibold hover-lift bg-white">
+                                <i class="far fa-heart me-2"></i> Save Job
+                            </a>
                         {% endif %}
                     </div>
 
