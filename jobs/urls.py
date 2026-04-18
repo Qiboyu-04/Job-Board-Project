@@ -26,6 +26,12 @@ urlpatterns = [
     # Saved Jobs
     path('save/<int:job_id>/', views.toggle_save_job, name='toggle_save_job'),
     path('saved/', views.saved_jobs, name='saved_jobs'),
+
+    # Notifications
+    path('notifications/', views.notifications, name='notifications'),
+    path('notifications/<int:notification_id>/read/', views.mark_notification_as_read, name='mark_notification_as_read'),
+    path('notifications/mark-all-read/', views.mark_all_as_read, name='mark_all_as_read'),
+    path('api/notifications/unread-count/', views.get_unread_count, name='get_unread_count'),
 ]
 
 if settings.DEBUG:

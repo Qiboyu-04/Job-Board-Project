@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.utils.html import format_html
-from .models import Profile, Company, Job, Resume, Application
+from .models import Profile, Company, Job, Resume, Application, Notification
 
 User = get_user_model()
 
@@ -11,7 +11,7 @@ class JobAdmin(admin.ModelAdmin):
     list_filter = ('status', 'job_type', 'category', 'company', 'posted_at')
     search_fields = ('title', 'description', 'company__name', 'location')
     date_hierarchy = 'posted_at'
-    readonly_fields = ('posted_at', 'updated_at')
+    readonly_fields = ('posted_at', 'updated_at', 'posted_by')
     fieldsets = (
         ('Basic Info', {'fields': ('title', 'company', 'location', 'job_type', 'category')}),
         ('Details', {'fields': ('description', 'requirements', 'salary')}),
@@ -23,7 +23,30 @@ class JobAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
-        return qs.filter(posted_by=request.user)
+        # Only show jobs from the current user's company
+        user_companies = Company.objects.filter(created_by=request.user)
+        return qs.filter(company__in=user_companies)
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        # For non-superuser employers, restrict company choices to their own company
+        if not request.user.is_superuser:
+            user_companies = Company.objects.filter(created_by=request.user)
+            form.base_fields['company'].queryset = user_companies
+        return form
+
+    def save_model(self, request, obj, form, change):
+        # Auto-set posted_by to current user
+        if not change:  # When creating a new job
+            obj.posted_by = request.user
+            # If user is not superuser, set company to their company
+            if not request.user.is_superuser:
+                company, _ = Company.objects.get_or_create(
+                    created_by=request.user,
+                    defaults={'name': f"{request.user.username}'s Company"}
+                )
+                obj.company = company
+        super().save_model(request, obj, form, change)
 
     def is_within_deadline(self, obj):
         return not obj.is_expired()
@@ -35,14 +58,18 @@ class JobAdmin(admin.ModelAdmin):
             return True
         if obj is None:
             return True
-        return obj.posted_by == request.user
+        # Check if job belongs to user's company
+        user_companies = Company.objects.filter(created_by=request.user)
+        return obj.company in user_companies
 
     def has_delete_permission(self, request, obj=None):
         if request.user.is_superuser:
             return True
         if obj is None:
             return True
-        return obj.posted_by == request.user
+        # Check if job belongs to user's company
+        user_companies = Company.objects.filter(created_by=request.user)
+        return obj.company in user_companies
 
     def approve_jobs(self, request, queryset):
         queryset.update(status='approved')
@@ -150,9 +177,29 @@ class CompanyAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
 
+# ---------- NotificationAdmin ----------
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('recipient', 'notification_type', 'title', 'is_read', 'created_at')
+    list_filter = ('is_read', 'notification_type', 'created_at')
+    search_fields = ('recipient__username', 'title', 'message')
+    readonly_fields = ('created_at', 'updated_at')
+    date_hierarchy = 'created_at'
+    fieldsets = (
+        ('Info', {'fields': ('recipient', 'notification_type', 'title', 'message')}),
+        ('Status', {'fields': ('is_read', 'application')}),
+        ('Time', {'fields': ('created_at', 'updated_at')}),
+    )
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser
+
+    def has_delete_permission(self, request, obj=None):
+        return request.user.is_superuser
+
 # ---------- 注册 Admin ----------
 admin.site.register(Job, JobAdmin)
 admin.site.register(Application, ApplicationAdmin)
 admin.site.register(Resume, ResumeAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(Company, CompanyAdmin)
+admin.site.register(Notification, NotificationAdmin)

@@ -53,6 +53,18 @@
                         </li>
 
                         <li class="nav-item">
+                            <a class="nav-link position-relative {% if '/notifications/' in request.path %}active{% endif %}" href="{% url 'notifications' %}">
+                                <i class="fas fa-bell"></i>
+                                Messages
+                                {% if unread_notifications_count > 0 %}
+                                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" data-notification-count style="font-size: 0.65rem;">
+                                        {{ unread_notifications_count }}
+                                    </span>
+                                {% endif %}
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
                             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                         </li>
                     {% else %}

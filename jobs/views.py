@@ -1,10 +1,10 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib.auth.models import Group, Permission
 
-from .models import Job, Application, Profile, SavedJob, Company, JOB_CATEGORY_CHOICES
+from .models import Job, Application, Profile, SavedJob, Company, JOB_CATEGORY_CHOICES, Notification
 from .forms import ApplicationForm, UserRegisterForm, UserLoginForm
 
 
@@ -190,4 +190,81 @@ def saved_jobs(request):
     saved_jobs = SavedJob.objects.filter(user=request.user)
     return render(request, 'jobs/saved_jobs.html', {
         'saved_jobs': saved_jobs
+    })
+
+
+# View for notifications/messages
+@login_required(login_url='login')
+def notifications(request):
+    """Display all notifications for the logged-in user"""
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    
+    # Get all notifications for the user
+    all_notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+    
+    # Count unread notifications
+    unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+    
+    # Get new applications for employers
+    new_applications_count = 0
+    if profile.user_type == 'employer':
+        new_applications = Notification.objects.filter(
+            recipient=request.user,
+            notification_type='application_received',
+            is_read=False
+        )
+        new_applications_count = new_applications.count()
+    
+    return render(request, 'jobs/notifications.html', {
+        'notifications': all_notifications,
+        'unread_count': unread_count,
+        'new_applications_count': new_applications_count,
+    })
+
+
+@login_required(login_url='login')
+def mark_notification_as_read(request, notification_id):
+    """Mark a single notification as read"""
+    notification = get_object_or_404(Notification, pk=notification_id)
+    
+    if notification.recipient != request.user:
+        return HttpResponseForbidden("You don't have permission to access this notification.")
+    
+    notification.is_read = True
+    notification.save()
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+    
+    return redirect('notifications')
+
+
+@login_required(login_url='login')
+def mark_all_as_read(request):
+    """Mark all notifications as read for the current user"""
+    Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+    
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({'success': True})
+    
+    return redirect('notifications')
+
+
+@login_required(login_url='login')
+def get_unread_count(request):
+    """Get unread notification count via AJAX"""
+    unread_count = Notification.objects.filter(recipient=request.user, is_read=False).count()
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    
+    new_applications_count = 0
+    if profile.user_type == 'employer':
+        new_applications_count = Notification.objects.filter(
+            recipient=request.user,
+            notification_type='application_received',
+            is_read=False
+        ).count()
+    
+    return JsonResponse({
+        'unread_count': unread_count,
+        'new_applications_count': new_applications_count,
     })

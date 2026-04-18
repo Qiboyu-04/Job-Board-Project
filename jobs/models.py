@@ -320,3 +320,68 @@ class SavedJob(models.Model):
 
     def __str__(self):
         return f"{self.user.username} saved {self.job.title}"
+
+
+# Notification types
+NOTIFICATION_TYPE_CHOICES = (
+    ('application_received', 'Application Received'),
+    ('application_reviewed', 'Application Reviewed'),
+    ('application_interview', 'Interview Invitation'),
+    ('application_accepted', 'Application Accepted'),
+    ('application_rejected', 'Application Rejected'),
+)
+
+
+class Notification(models.Model):
+    # Recipient can be student or employer
+    recipient = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='notifications',
+        verbose_name='Recipient'
+    )
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name='notifications',
+        verbose_name='Application',
+        null=True,
+        blank=True
+    )
+    notification_type = models.CharField(
+        max_length=30,
+        choices=NOTIFICATION_TYPE_CHOICES,
+        verbose_name='Notification Type'
+    )
+    title = models.CharField(
+        max_length=200,
+        verbose_name='Title'
+    )
+    message = models.TextField(
+        verbose_name='Message'
+    )
+    is_read = models.BooleanField(
+        default=False,
+        verbose_name='Is Read'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Created At'
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        verbose_name='Updated At'
+    )
+
+    class Meta:
+        verbose_name = 'Notification'
+        verbose_name_plural = 'Notifications'
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', '-created_at']),
+            models.Index(fields=['is_read']),
+            models.Index(fields=['notification_type']),
+        ]
+
+    def __str__(self):
+        return f"{self.title} - {self.recipient.username}"
