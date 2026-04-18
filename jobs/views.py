@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.contrib.auth.models import Group, Permission
 
-from .models import Job, Application, Profile, SavedJob, Company
+from .models import Job, Application, Profile, SavedJob, Company, JOB_CATEGORY_CHOICES
 from .forms import ApplicationForm, UserRegisterForm, UserLoginForm
 
 
@@ -83,6 +83,7 @@ def job_list(request):
     query = request.GET.get('q', '')
     selected_location = request.GET.get('location', '')
     selected_type = request.GET.get('type', '')
+    selected_category = request.GET.get('category', '')
 
     if query:
         jobs = jobs.filter(title__icontains=query)
@@ -93,11 +94,16 @@ def job_list(request):
     if selected_type:
         jobs = jobs.filter(job_type=selected_type)
 
+    if selected_category:
+        jobs = jobs.filter(category=selected_category)
+
     return render(request, "jobs/job_list.html", {
         "jobs": jobs,
         "query": query,
         "selected_location": selected_location,
         "selected_type": selected_type,
+        "selected_category": selected_category,
+        "categories": JOB_CATEGORY_CHOICES,
     })
 
 def job_detail(request, job_id):

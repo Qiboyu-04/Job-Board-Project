@@ -16,6 +16,34 @@ JOB_TYPE_CHOICES = (
     ('full-time', 'full-time'),
 )
 
+JOB_CATEGORY_CHOICES = (
+    ('accounting', 'Accounting'),
+    ('agriculture_fishing_forestry', 'Agriculture, fishing & forestry'),
+    ('architecture', 'Architecture'),
+    ('automotive', 'Automotive'),
+    ('banking_finance_insurance', 'Banking, finance & insurance'),
+    ('construction_roading', 'Construction & roading'),
+    ('customer_service', 'Customer service'),
+    ('education', 'Education'),
+    ('engineering', 'Engineering'),
+    ('executive_general_management', 'Executive & general management'),
+    ('government_council', 'Government & council'),
+    ('healthcare', 'Healthcare'),
+    ('hospitality_tourism', 'Hospitality & tourism'),
+    ('hr_recruitment', 'HR & recruitment'),
+    ('it', 'IT'),
+    ('legal', 'Legal'),
+    ('manufacturing_operations', 'Manufacturing & operations'),
+    ('marketing_media_communications', 'Marketing, media & communications'),
+    ('office_administration', 'Office & administration'),
+    ('property', 'Property'),
+    ('retail', 'Retail'),
+    ('sales', 'Sales'),
+    ('science_technology', 'Science & technology'),
+    ('trades_services', 'Trades & services'),
+    ('transport_logistics', 'Transport & logistics'),
+    ('other', 'Other'),
+)
 
 JOB_STATUS_CHOICES = (
     ('pending', 'pending'),
@@ -121,6 +149,12 @@ class Job(models.Model):
         choices=JOB_TYPE_CHOICES,
         verbose_name='Job Type'
     )
+    category = models.CharField(
+        max_length=50,
+        choices=JOB_CATEGORY_CHOICES,
+        default='other',
+        verbose_name='Category'
+    )
     description = models.TextField(
         verbose_name='Job Description'
     )
@@ -166,6 +200,7 @@ class Job(models.Model):
             models.Index(fields=['posted_at']),
             models.Index(fields=['company']),
             models.Index(fields=['posted_by']),
+            models.Index(fields=['category']),
             models.Index(fields=['-posted_at']),
         ]
 

@@ -7,13 +7,13 @@ User = get_user_model()
 
 # ---------- JobAdmin ----------
 class JobAdmin(admin.ModelAdmin):
-    list_display = ('title', 'company', 'job_type', 'status', 'posted_at', 'deadline', 'is_within_deadline')
-    list_filter = ('status', 'job_type', 'company', 'posted_at')
+    list_display = ('title', 'company', 'job_type', 'category', 'status', 'posted_at', 'deadline', 'is_within_deadline')
+    list_filter = ('status', 'job_type', 'category', 'company', 'posted_at')
     search_fields = ('title', 'description', 'company__name', 'location')
     date_hierarchy = 'posted_at'
     readonly_fields = ('posted_at', 'updated_at')
     fieldsets = (
-        ('Basic Info', {'fields': ('title', 'company', 'location', 'job_type')}),
+        ('Basic Info', {'fields': ('title', 'company', 'location', 'job_type', 'category')}),
         ('Details', {'fields': ('description', 'requirements', 'salary')}),
         ('Status & Time', {'fields': ('status', 'deadline', 'posted_by', 'posted_at', 'updated_at')}),
     )
