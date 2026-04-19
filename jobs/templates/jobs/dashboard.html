@@ -1,0 +1,94 @@
+{% extends "jobs/base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Dashboard</h2>
+    <p>Welcome, {{ user.username }}!</p>
+
+    {% if user_type == 'student' %}
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-header">Companies</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ company_count }}</h5>
+                        <p class="card-text">Total number of companies on the platform.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-header">Jobs</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ job_count }}</h5>
+                        <p class="card-text">Approved job opportunities available.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elif user_type == 'employer' %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-header">Students</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ student_count }}</h5>
+                        <p class="card-text">Total number of registered students.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% elif user_type == 'admin' %}
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-header">Companies</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ company_count }}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-header">Jobs (Approved)</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ job_count }}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-header">Students</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ student_count }}</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-white bg-warning mb-3">
+                    <div class="card-header">Employers</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ employer_count }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% if application_count %}
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card text-white bg-secondary mb-3">
+                    <div class="card-header">Applications</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ application_count }}</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    {% else %}
+        <p>No data available for your user type.</p>
+    {% endif %}
+</div>
+{% endblock %}

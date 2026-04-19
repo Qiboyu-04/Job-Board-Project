@@ -196,6 +196,7 @@ class NotificationAdmin(admin.ModelAdmin):
     def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser
 
+
 # ---------- 注册 Admin ----------
 admin.site.register(Job, JobAdmin)
 admin.site.register(Application, ApplicationAdmin)

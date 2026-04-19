@@ -2,8 +2,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse
-from django.contrib.auth.models import Group, Permission
-
+from django.contrib.auth.models import Group, Permission,User
+from django.db.models import Count
 from .models import Job, Application, Profile, SavedJob, Company, JOB_CATEGORY_CHOICES, Notification
 from .forms import ApplicationForm, UserRegisterForm, UserLoginForm
 
@@ -268,3 +268,51 @@ def get_unread_count(request):
         'unread_count': unread_count,
         'new_applications_count': new_applications_count,
     })
+
+@login_required
+def dashboard(request):
+    user = request.user
+    # 获取用户类型
+    try:
+        profile = user.profile
+        user_type = profile.user_type
+    except Profile.DoesNotExist:
+        user_type = 'student'  # 默认给学生权限（或根据需求处理）
+
+    context = {}
+    if user_type == 'student':
+        # 学生：看企业数、工作数
+        company_count = Company.objects.count()
+        job_count = Job.objects.filter(status='approved').count()  # 只统计已通过的职位
+        context.update({
+            'company_count': company_count,
+            'job_count': job_count,
+            'user_type': 'student',
+        })
+    elif user_type == 'employer':
+        # 雇主：看总学生数（已注册的学生数量）
+        student_count = User.objects.filter(profile__user_type='student').count()
+        context.update({
+            'student_count': student_count,
+            'user_type': 'employer',
+        })
+    elif user_type == 'admin':
+        # 管理员：看所有数据
+        company_count = Company.objects.count()
+        job_count = Job.objects.filter(status='approved').count()
+        student_count = User.objects.filter(profile__user_type='student').count()
+        employer_count = User.objects.filter(profile__user_type='employer').count()
+        application_count = Application.objects.count()  # 如果不需要可以去掉
+        context.update({
+            'company_count': company_count,
+            'job_count': job_count,
+            'student_count': student_count,
+            'employer_count': employer_count,
+            'application_count': application_count,
+            'user_type': 'admin',
+        })
+    else:
+       
+        return render(request, 'jobs/dashboard.html', {'error': 'Unknown user type'})
+
+    return render(request, 'jobs/dashboard.html', context)
