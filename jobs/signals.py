@@ -30,8 +30,8 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=User)
 def save_user_profile(sender, instance, **kwargs):
-    """Save the Profile whenever the User is saved"""
-    instance.profile.save()
+    """Ensure a Profile exists for every User after save."""
+    Profile.objects.get_or_create(user=instance)
 
 
 @receiver(post_save, sender=Application)

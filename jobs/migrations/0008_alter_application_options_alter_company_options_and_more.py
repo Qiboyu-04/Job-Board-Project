@@ -5,6 +5,17 @@ from django.conf import settings
 from django.db import migrations, models
 
 
+def fix_null_company(apps, schema_editor):
+    Job = apps.get_model('jobs', 'Job')
+    Company = apps.get_model('jobs', 'Company')
+    
+    # Get the first company as default
+    default_company = Company.objects.first()
+    if default_company:
+        # Update all jobs with null company to use the default company
+        Job.objects.filter(company__isnull=True).update(company=default_company)
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -13,6 +24,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(fix_null_company),
         migrations.AlterModelOptions(
             name='application',
             options={'verbose_name': 'Job Application', 'verbose_name_plural': 'Job Applications'},

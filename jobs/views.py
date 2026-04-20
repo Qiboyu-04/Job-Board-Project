@@ -25,29 +25,24 @@ def register_view(request):
 
         if form.is_valid():
             user = form.save()
-
-            user_type = request.POST.get('user_type')
+            user_type = form.cleaned_data.get('user_type')
 
             profile = Profile.objects.get(user=user)
             profile.user_type = user_type
             profile.save()
 
-            if user_type == 'employer':
-                Company.objects.get_or_create(
-                    user=user,
-                    defaults={
-                        'name': f"{user.username}'s Company",
-                        'created_by': user,
-                    }
-                )
-
             if user_type in ['employer', 'admin']:
                 user.is_staff = True
                 user.save()
-
                 group, _ = Group.objects.get_or_create(name='Qualified Company')
-
                 user.groups.add(group)
+
+            if user_type == 'employer':
+                company_name = f"{user.username}'s Company"
+                Company.objects.get_or_create(
+                    name=company_name,
+                    defaults={'created_by': user},
+                )
 
             login(request, user)
             return redirect_by_user_type(user)
@@ -159,7 +154,7 @@ def apply_job(request, job_id):
     })
 
 
-@login_required
+@login_required(login_url='login')
 def company_dashboard(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
     if profile.user_type != 'employer':
@@ -269,7 +264,8 @@ def get_unread_count(request):
         'new_applications_count': new_applications_count,
     })
 
-@login_required
+
+@login_required(login_url='login')
 def dashboard(request):
     user = request.user
     # 获取用户类型

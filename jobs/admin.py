@@ -19,21 +19,33 @@ class JobAdmin(admin.ModelAdmin):
     )
     actions = ['approve_jobs', 'reject_jobs']
 
+    def _get_user_companies(self, request):
+        user_companies = Company.objects.filter(created_by=request.user)
+        if not user_companies.exists():
+            company_name = f"{request.user.username}'s Company"
+            user_companies = Company.objects.filter(name=company_name)
+        return user_companies
+
     def get_queryset(self, request):
         qs = super().get_queryset(request)
         if request.user.is_superuser:
             return qs
         # Only show jobs from the current user's company
-        user_companies = Company.objects.filter(created_by=request.user)
+        user_companies = self._get_user_companies(request)
         return qs.filter(company__in=user_companies)
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
         # For non-superuser employers, restrict company choices to their own company
         if not request.user.is_superuser:
-            user_companies = Company.objects.filter(created_by=request.user)
+            user_companies = self._get_user_companies(request)
             form.base_fields['company'].queryset = user_companies
         return form
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'company' and not request.user.is_superuser:
+            kwargs['queryset'] = self._get_user_companies(request)
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
 
     def save_model(self, request, obj, form, change):
         # Auto-set posted_by to current user
@@ -42,8 +54,8 @@ class JobAdmin(admin.ModelAdmin):
             # If user is not superuser, set company to their company
             if not request.user.is_superuser:
                 company, _ = Company.objects.get_or_create(
-                    created_by=request.user,
-                    defaults={'name': f"{request.user.username}'s Company"}
+                    name=f"{request.user.username}'s Company",
+                    defaults={'created_by': request.user}
                 )
                 obj.company = company
         super().save_model(request, obj, form, change)
