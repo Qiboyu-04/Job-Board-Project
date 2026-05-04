@@ -18,7 +18,22 @@ class ApplicationForm(forms.ModelForm):
 
     class Meta:
         model = Application
-        fields = ['cover_letter']
+        fields = ['education_level', 'experience_value', 'experience_unit', 'cover_letter']
+        labels = {
+            'education_level': 'Education Level',
+            'experience_value': 'Work Experience',
+            'experience_unit': 'Experience Unit',
+            'cover_letter': 'Cover Letter',
+        }
+        help_texts = {
+            'experience_value': 'Enter your work experience amount and choose a unit (months or years).',
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['education_level'].required = False
+        self.fields['experience_value'].required = False
+        self.fields['experience_unit'].required = False
 
 
 # User registration form

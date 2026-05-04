@@ -279,37 +279,37 @@ def get_unread_count(request):
 @login_required(login_url='login')
 def dashboard(request):
     user = request.user
-    # 获取用户类型
+    # Determine user type
     try:
         profile = user.profile
         user_type = profile.user_type
     except Profile.DoesNotExist:
-        user_type = 'student'  # 默认给学生权限（或根据需求处理）
+        user_type = 'student'  # default to student if no profile exists
 
     context = {}
     if user_type == 'student':
-        # 学生：看企业数、工作数
+        # Student view: show company count and approved job count
         company_count = Company.objects.count()
-        job_count = Job.objects.filter(status='approved').count()  # 只统计已通过的职位
+        job_count = Job.objects.filter(status='approved').count()  # count only approved jobs
         context.update({
             'company_count': company_count,
             'job_count': job_count,
             'user_type': 'student',
         })
     elif user_type == 'employer':
-        # 雇主：看总学生数（已注册的学生数量）
+        # Employer view: show total registered student count
         student_count = User.objects.filter(profile__user_type='student').count()
         context.update({
             'student_count': student_count,
             'user_type': 'employer',
         })
     elif user_type == 'admin':
-        # 管理员：看所有数据
+        # Admin view: show all key counts
         company_count = Company.objects.count()
         job_count = Job.objects.filter(status='approved').count()
         student_count = User.objects.filter(profile__user_type='student').count()
         employer_count = User.objects.filter(profile__user_type='employer').count()
-        application_count = Application.objects.count()  
+        application_count = Application.objects.count()
         context.update({
             'company_count': company_count,
             'job_count': job_count,

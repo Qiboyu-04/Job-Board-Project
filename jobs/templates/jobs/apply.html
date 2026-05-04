@@ -35,6 +35,25 @@
                             </div>
 
                             <div class="mb-4">
+                                {{ form.education_level.label_tag }}
+                                {{ form.education_level }}
+                            </div>
+
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    {{ form.experience_value.label_tag }}
+                                    {{ form.experience_value }}
+                                    {% if form.experience_value.help_text %}
+                                        <small class="form-text text-muted">{{ form.experience_value.help_text }}</small>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6">
+                                    {{ form.experience_unit.label_tag }}
+                                    {{ form.experience_unit }}
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
                                 {{ form.resume_title.label_tag }}
                                 {{ form.resume_title }}
                                 {% if form.resume_title.help_text %}

@@ -96,16 +96,29 @@ class JobAdmin(admin.ModelAdmin):
 
 # ---------- ApplicationAdmin ----------
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('student', 'job', 'status', 'applied_at', 'can_be_cancelled')
-    list_filter = ('status', 'applied_at')
+    list_display = ('student', 'job', 'education_level', 'experience_summary', 'status', 'applied_at', 'can_be_cancelled')
+    list_filter = ('status', 'applied_at', 'education_level')
     search_fields = ('student__username', 'job__title', 'cover_letter')
     date_hierarchy = 'applied_at'
     readonly_fields = ('applied_at', 'updated_at')
     fieldsets = (
         ('Application Info', {'fields': ('student', 'job', 'resume', 'cover_letter')}),
+        ('Applicant Profile', {'fields': ('education_level', 'experience_value', 'experience_unit')}),
         ('Status & Time', {'fields': ('status', 'applied_at', 'updated_at')}),
     )
     actions = ['mark_as_reviewed', 'mark_as_interview', 'mark_as_accepted']
+
+    def get_actions(self, request):
+        actions = super().get_actions(request)
+        if 'delete_selected' in actions:
+            actions.pop('delete_selected')
+        return actions
+
+    def experience_summary(self, obj):
+        if obj.experience_value and obj.experience_unit:
+            return f"{obj.experience_value} {obj.get_experience_unit_display()}"
+        return '-'
+    experience_summary.short_description = 'Work Experience'
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

@@ -45,6 +45,22 @@ JOB_CATEGORY_CHOICES = (
     ('other', 'Other'),
 )
 
+EDUCATION_LEVEL_CHOICES = (
+    ('middle_school', 'Middle School'),
+    ('high_school', 'High School'),
+    ('vocational_high_school', 'Vocational High School'),
+    ('junior_college', 'Junior College'),
+    ('bachelor', 'Bachelor'),
+    ('master', 'Master'),
+    ('doctorate', 'Doctorate'),
+    ('other', 'Other'),
+)
+
+EXPERIENCE_UNIT_CHOICES = (
+    ('months', 'Months'),
+    ('years', 'Years'),
+)
+
 JOB_STATUS_CHOICES = (
     ('pending', 'pending'),
     ('approved', 'approved'),
@@ -268,6 +284,23 @@ class Application(models.Model):
         null=True,
         blank=True,
         verbose_name='Resume Used'
+    )
+    education_level = models.CharField(
+        max_length=30,
+        choices=EDUCATION_LEVEL_CHOICES,
+        blank=True,
+        verbose_name='Education Level'
+    )
+    experience_value = models.PositiveIntegerField(
+        null=True,
+        blank=True,
+        verbose_name='Work Experience'
+    )
+    experience_unit = models.CharField(
+        max_length=10,
+        choices=EXPERIENCE_UNIT_CHOICES,
+        default='years',
+        verbose_name='Experience Unit'
     )
     cover_letter = models.TextField(
         blank=True,

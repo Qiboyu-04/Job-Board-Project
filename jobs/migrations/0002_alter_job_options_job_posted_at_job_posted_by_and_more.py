@@ -43,7 +43,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='job',
             name='status',
-            field=models.CharField(choices=[('pending', '待审核'), ('approved', '已通过'), ('rejected', '已拒绝')], default='pending', max_length=20),
+            field=models.CharField(choices=[('pending', 'pending'), ('approved', 'approved'), ('rejected', 'rejected')], default='pending', max_length=20),
         ),
         migrations.AddField(
             model_name='job',
@@ -76,7 +76,7 @@ class Migration(migrations.Migration):
             name='Profile',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('user_type', models.CharField(choices=[('student', '学生'), ('employer', '雇主'), ('admin', '管理员')], default='student', max_length=200)),
+                ('user_type', models.CharField(choices=[('student', 'student'), ('employer', 'employer'), ('admin', 'admin')], default='student', max_length=200)),
                 ('phone', models.CharField(blank=True, max_length=200)),
                 ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='profile', to=settings.AUTH_USER_MODEL)),
             ],
@@ -85,7 +85,7 @@ class Migration(migrations.Migration):
             name='Resume',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(help_text='简历名称，例如“我的实习简历”', max_length=200)),
+                ('title', models.CharField(help_text='Resume title, e.g. "My Internship Resume"', max_length=200)),
                 ('file', models.FileField(upload_to='resumes/')),
                 ('uploaded_at', models.DateTimeField(auto_now_add=True)),
                 ('is_default', models.BooleanField(default=False)),
@@ -96,8 +96,8 @@ class Migration(migrations.Migration):
             name='Application',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('cover_letter', models.TextField(blank=True, help_text='求职信')),
-                ('status', models.CharField(choices=[('submitted', '已提交'), ('reviewed', '已查看'), ('interview', '面试中'), ('rejected', '已拒绝'), ('accepted', '已录用')], default='submitted', max_length=20)),
+                ('cover_letter', models.TextField(blank=True, help_text='Cover letter')),
+                ('status', models.CharField(choices=[('submitted', 'submitted'), ('reviewed', 'reviewed'), ('interview', 'interview'), ('rejected', 'rejected'), ('accepted', 'accepted')], default='submitted', max_length=20)),
                 ('applied_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('job', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='applications', to='jobs.job')),
