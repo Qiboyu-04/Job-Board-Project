@@ -10,9 +10,9 @@ from django.db.models import Count, Q
 import importlib
 
 try:
-    openai = importlib.import_module('openai')
+    genai = importlib.import_module('google.generativeai')
 except ImportError:
-    openai = None
+    genai = None
 
 from .models import Job, Application, Profile, SavedJob, Company, Resume, JOB_CATEGORY_CHOICES, Notification
 from .forms import ApplicationForm, UserRegisterForm, UserLoginForm
@@ -62,13 +62,16 @@ def ai_assistant(request):
 
         recommended_jobs = jobs.order_by('-posted_at')[:5]
 
-        if not openai:
-            error = 'OpenAI package not installed. Install it with `pip install openai`.'
+        if not genai:
+            error = 'Gemini package not installed. Install it with `pip install google-generativeai`.'
         else:
-            openai.api_key = os.getenv('OPENAI_API_KEY', '')
-            if not openai.api_key:
-                error = 'AI key not configured. Set OPENAI_API_KEY in your environment.'
+            api_key = os.getenv('GOOGLE_API_KEY', '')
+            if not api_key:
+                error = 'AI key not configured. Set GOOGLE_API_KEY in your environment.'
             else:
+                genai.configure(api_key=api_key)
+                model_name = os.getenv('GEMINI_MODEL', 'models/gemini-2.5-flash')
+
                 prompt_jobs = []
                 for job in recommended_jobs:
                     prompt_jobs.append(
@@ -78,8 +81,8 @@ def ai_assistant(request):
                     prompt_jobs = ['No approved jobs match the current filters.']
 
                 system_message = (
-                    'You are an AI career advisor for a student job board. ' 
-                    'Use only the provided job list when recommending jobs. ' 
+                    'You are an AI career advisor for a student job board. '
+                    'Use only the provided job list when recommending jobs. '
                     'Do not invent jobs or include positions not in the list.'
                 )
                 user_message = (
@@ -92,16 +95,9 @@ def ai_assistant(request):
                 )
 
                 try:
-                    completion = openai.ChatCompletion.create(
-                        model='gpt-3.5-turbo',
-                        messages=[
-                            {'role': 'system', 'content': system_message},
-                            {'role': 'user', 'content': user_message},
-                        ],
-                        temperature=0.7,
-                        max_tokens=300,
-                    )
-                    ai_response = completion.choices[0].message.content.strip()
+                    model = genai.GenerativeModel(model_name)
+                    completion = model.generate_content(user_message)
+                    ai_response = completion.text.strip()
                 except Exception as exc:
                     error = f'AI request failed: {exc}'
 
