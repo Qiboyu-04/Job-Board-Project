@@ -1,9 +1,19 @@
+import os
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse
-from django.contrib.auth.models import Group, Permission,User
-from django.db.models import Count
+from django.contrib.auth.models import Group, Permission, User
+from django.db.models import Count, Q
+
+import importlib
+
+try:
+    openai = importlib.import_module('openai')
+except ImportError:
+    openai = None
+
 from .models import Job, Application, Profile, SavedJob, Company, Resume, JOB_CATEGORY_CHOICES, Notification
 from .forms import ApplicationForm, UserRegisterForm, UserLoginForm
 
@@ -16,7 +26,94 @@ def redirect_by_user_type(user):
 
 
 def home(request):
-    return render(request, "jobs/home.html")
+    featured_jobs = Job.objects.filter(status='approved').order_by('-posted_at')[:5]
+    return render(request, "jobs/home.html", {'jobs': featured_jobs})
+
+
+def ai_assistant(request):
+    query = request.POST.get('query', '').strip() if request.method == 'POST' else ''
+    preferred_type = request.POST.get('preferred_type', '').strip() if request.method == 'POST' else ''
+    location = request.POST.get('location', '').strip() if request.method == 'POST' else ''
+    skills = request.POST.get('skills', '').strip() if request.method == 'POST' else ''
+    ai_response = ''
+    recommended_jobs = []
+    error = None
+
+    if request.method == 'POST':
+        jobs = Job.objects.filter(status='approved')
+        if query:
+            jobs = jobs.filter(
+                Q(title__icontains=query) |
+                Q(description__icontains=query) |
+                Q(requirements__icontains=query) |
+                Q(company__name__icontains=query)
+            )
+        if preferred_type:
+            jobs = jobs.filter(job_type__icontains=preferred_type)
+        if location:
+            jobs = jobs.filter(location__icontains=location)
+        if skills:
+            jobs = jobs.filter(
+                Q(title__icontains=skills) |
+                Q(description__icontains=skills) |
+                Q(requirements__icontains=skills) |
+                Q(category__icontains=skills)
+            )
+
+        recommended_jobs = jobs.order_by('-posted_at')[:5]
+
+        if not openai:
+            error = 'OpenAI package not installed. Install it with `pip install openai`.'
+        else:
+            openai.api_key = os.getenv('OPENAI_API_KEY', '')
+            if not openai.api_key:
+                error = 'AI key not configured. Set OPENAI_API_KEY in your environment.'
+            else:
+                prompt_jobs = []
+                for job in recommended_jobs:
+                    prompt_jobs.append(
+                        f"- {job.title} at {job.company.name} in {job.location} ({job.job_type}, {job.get_category_display()})\n  Requirements: {job.requirements[:120].replace('\n', ' ')}"
+                    )
+                if not prompt_jobs:
+                    prompt_jobs = ['No approved jobs match the current filters.']
+
+                system_message = (
+                    'You are an AI career advisor for a student job board. ' 
+                    'Use only the provided job list when recommending jobs. ' 
+                    'Do not invent jobs or include positions not in the list.'
+                )
+                user_message = (
+                    f"User request: {query or 'Help me find suitable jobs.'}\n"
+                    f"Preferred job type: {preferred_type or 'Any'}\n"
+                    f"Location: {location or 'Any'}\n"
+                    f"Skills / experience summary: {skills or 'Not specified'}\n\n"
+                    'Available jobs:\n' + '\n'.join(prompt_jobs) + '\n\n'
+                    'Please recommend the most suitable roles, explain why they fit, and mention the top matches by title.'
+                )
+
+                try:
+                    completion = openai.ChatCompletion.create(
+                        model='gpt-3.5-turbo',
+                        messages=[
+                            {'role': 'system', 'content': system_message},
+                            {'role': 'user', 'content': user_message},
+                        ],
+                        temperature=0.7,
+                        max_tokens=300,
+                    )
+                    ai_response = completion.choices[0].message.content.strip()
+                except Exception as exc:
+                    error = f'AI request failed: {exc}'
+
+    return render(request, 'jobs/ai_assistant.html', {
+        'query': query,
+        'preferred_type': preferred_type,
+        'location': location,
+        'skills': skills,
+        'ai_response': ai_response,
+        'recommended_jobs': recommended_jobs,
+        'error': error,
+    })
 
 
 def register_view(request):
