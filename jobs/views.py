@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib.auth.models import Group, Permission,User
 from django.db.models import Count
-from .models import Job, Application, Profile, SavedJob, Company, JOB_CATEGORY_CHOICES, Notification
+from .models import Job, Application, Profile, SavedJob, Company, Resume, JOB_CATEGORY_CHOICES, Notification
 from .forms import ApplicationForm, UserRegisterForm, UserLoginForm
 
 
@@ -138,11 +138,22 @@ def apply_job(request, job_id):
         return redirect(f'/jobs/{job.id}/?duplicate=1')
 
     if request.method == 'POST':
-        form = ApplicationForm(request.POST)
+        form = ApplicationForm(request.POST, request.FILES)
         if form.is_valid():
             app = form.save(commit=False)
             app.student = request.user
             app.job = job
+
+            resume_file = form.cleaned_data.get('resume_file')
+            resume_title = form.cleaned_data.get('resume_title') or f"{request.user.username} Resume"
+            if resume_file:
+                resume = Resume.objects.create(
+                    student=request.user,
+                    title=resume_title,
+                    file=resume_file
+                )
+                app.resume = resume
+
             app.save()
             return redirect(f'/jobs/{job.id}/?success=1')
     else:
@@ -298,7 +309,7 @@ def dashboard(request):
         job_count = Job.objects.filter(status='approved').count()
         student_count = User.objects.filter(profile__user_type='student').count()
         employer_count = User.objects.filter(profile__user_type='employer').count()
-        application_count = Application.objects.count()  # 如果不需要可以去掉
+        application_count = Application.objects.count()  
         context.update({
             'company_count': company_count,
             'job_count': job_count,

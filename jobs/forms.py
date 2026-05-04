@@ -4,6 +4,18 @@ from django.contrib.auth.models import User
 from .models import Application, Profile
 
 class ApplicationForm(forms.ModelForm):
+    resume_title = forms.CharField(
+        max_length=200,
+        required=False,
+        label='Resume title',
+        help_text='Optional title for the resume file, e.g. "My Internship Resume"'
+    )
+    resume_file = forms.FileField(
+        required=False,
+        label='Upload resume',
+        help_text='Upload your resume file (PDF, DOCX, etc.)'
+    )
+
     class Meta:
         model = Application
         fields = ['cover_letter']

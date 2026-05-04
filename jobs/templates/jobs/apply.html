@@ -26,7 +26,29 @@
                         {% csrf_token %}
 
                         <div class="mb-4 text-secondary">
-                            {{ form.as_p }}
+                            <div class="mb-4">
+                                {{ form.cover_letter.label_tag }}
+                                {{ form.cover_letter }}
+                                {% if form.cover_letter.help_text %}
+                                    <small class="form-text text-muted">{{ form.cover_letter.help_text }}</small>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-4">
+                                {{ form.resume_title.label_tag }}
+                                {{ form.resume_title }}
+                                {% if form.resume_title.help_text %}
+                                    <small class="form-text text-muted">{{ form.resume_title.help_text }}</small>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-4">
+                                {{ form.resume_file.label_tag }}
+                                {{ form.resume_file }}
+                                {% if form.resume_file.help_text %}
+                                    <small class="form-text text-muted">{{ form.resume_file.help_text }}</small>
+                                {% endif %}
+                            </div>
                         </div>
 
                         <button type="submit" class="btn btn-primary btn-lg w-100 rounded-pill fw-bold shadow-sm hover-lift mt-2">
