@@ -128,3 +128,7 @@ import os
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+LOGIN_URL = '/login/'          # 或者使用命名路由 LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = '/'       # 登录成功后跳转的页面（可选）
+LOGOUT_REDIRECT_URL = '/'  

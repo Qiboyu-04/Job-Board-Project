@@ -1,12 +1,15 @@
 import os
 
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden, JsonResponse
 from django.contrib.auth.models import Group, Permission, User
-from django.db.models import Count, Q
-
+from django.db.models import Count, Q, Avg
+from django.db.models.functions import TruncMonth, TruncWeek
+from datetime import timedelta, date
+from django.utils import timezone
 import importlib
 
 try:
@@ -369,35 +372,81 @@ def get_unread_count(request):
     })
 
 
-@login_required(login_url='login')
+@login_required
 def dashboard(request):
     user = request.user
-    # Determine user type
     try:
         profile = user.profile
         user_type = profile.user_type
     except Profile.DoesNotExist:
-        user_type = 'student'  # default to student if no profile exists
+        user_type = 'student'
 
-    context = {}
+    context = {'user_type': user_type}
+
     if user_type == 'student':
-        # Student view: show company count and approved job count
+        # 基础统计
         company_count = Company.objects.count()
-        job_count = Job.objects.filter(status='approved').count()  # count only approved jobs
+        job_count = Job.objects.filter(status='approved').count()
         context.update({
             'company_count': company_count,
             'job_count': job_count,
-            'user_type': 'student',
         })
+
+        # 热门职位（按申请数量排序，取前5）
+        hot_jobs = Job.objects.filter(status='approved').annotate(
+            app_count=Count('applications')
+        ).order_by('-app_count')[:5]
+        context['hot_jobs'] = hot_jobs
+        pass
+
     elif user_type == 'employer':
-        # Employer view: show total registered student count
+        # 学生总数
         student_count = User.objects.filter(profile__user_type='student').count()
+        context['student_count'] = student_count
+
+        # 雇主自己发布的职位
+        my_jobs = Job.objects.filter(posted_by=user)
+        # 各职位的申请数量
+        job_app_stats = my_jobs.annotate(app_count=Count('applications')).values('id', 'title', 'app_count')
+        context['job_app_stats'] = job_app_stats
+
+        funnel_data = []
+        for job in my_jobs:
+            applications = Application.objects.filter(job=job)
+            submitted = applications.filter(status='submitted').count()
+            reviewed = applications.filter(status='reviewed').count()
+            interview = applications.filter(status='interview').count()
+            accepted = applications.filter(status='accepted').count()
+            funnel_data.append({
+                'title': job.title,
+                'submitted': submitted,
+                'reviewed': reviewed,
+                'interview': interview,
+                'accepted': accepted,
+            })
+        context['funnel_data'] = funnel_data
+
+        # 近6周申请趋势（按周统计自己职位的申请量）
+        six_weeks_ago = timezone.now() - timedelta(days=42)
+        weekly_apps = (
+            Application.objects.filter(
+                job__posted_by=user,
+                applied_at__gte=six_weeks_ago
+            )
+            .annotate(week=TruncWeek('applied_at'))
+            .values('week')
+            .annotate(count=Count('id'))
+            .order_by('week')
+        )
+        weekly_labels = [item['week'].strftime('%Y-%m-%d') for item in weekly_apps]
+        weekly_data = [item['count'] for item in weekly_apps]
         context.update({
-            'student_count': student_count,
-            'user_type': 'employer',
+            'weekly_labels': weekly_labels,
+            'weekly_data': weekly_data,
         })
+
     elif user_type == 'admin':
-        # Admin view: show all key counts
+        # 基础统计
         company_count = Company.objects.count()
         job_count = Job.objects.filter(status='approved').count()
         student_count = User.objects.filter(profile__user_type='student').count()
@@ -409,10 +458,62 @@ def dashboard(request):
             'student_count': student_count,
             'employer_count': employer_count,
             'application_count': application_count,
-            'user_type': 'admin',
+        })
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        daily_active = User.objects.filter(last_login__gte=thirty_days_ago).count()
+        # 新注册用户（最近30天）
+        new_users = User.objects.filter(date_joined__gte=thirty_days_ago).count()
+        context['daily_active'] = daily_active
+        context['new_users'] = new_users
+        
+        from .models import JOB_CATEGORY_CHOICES
+        industry_stats = (
+            Job.objects.filter(status='approved')
+            .values('category')
+            .annotate(count=Count('id'))
+            .order_by('-count')[:6]  # 取前6个行业
+        )
+        # 获取类别的显示名称
+        category_map = dict(JOB_CATEGORY_CHOICES)
+        industry_labels = [category_map.get(item['category'], item['category']) for item in industry_stats]
+        industry_data = [item['count'] for item in industry_stats]
+        context['industry_labels'] = industry_labels
+        context['industry_data'] = industry_data
+
+        # 近6个月职位发布趋势
+        six_months_ago = timezone.now() - timedelta(days=180)
+        job_trend = (
+            Job.objects.filter(posted_at__gte=six_months_ago)
+            .annotate(month=TruncMonth('posted_at'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+        job_trend_labels = [item['month'].strftime('%Y-%m') for item in job_trend]
+        job_trend_data = [item['count'] for item in job_trend]
+
+        # 近6个月申请趋势
+        app_trend = (
+            Application.objects.filter(applied_at__gte=six_months_ago)
+            .annotate(month=TruncMonth('applied_at'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+        app_trend_labels = [item['month'].strftime('%Y-%m') for item in app_trend]
+        app_trend_data = [item['count'] for item in app_trend]
+
+        # 最近5条申请（用于表格）
+        recent_apps = Application.objects.select_related('student', 'job').order_by('-applied_at')[:5]
+
+        context.update({
+            'job_trend_labels': job_trend_labels,
+            'job_trend_data': job_trend_data,
+            'app_trend_labels': app_trend_labels,
+            'app_trend_data': app_trend_data,
+            'recent_apps': recent_apps,
         })
     else:
-       
         return render(request, 'jobs/dashboard.html', {'error': 'Unknown user type'})
 
     return render(request, 'jobs/dashboard.html', context)
