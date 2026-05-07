@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth import get_user_model
 from django.utils.html import format_html
 from .models import Profile, Company, Job, Resume, Application, Notification
-
+from django.db.models import Case, When, IntegerField, F
 User = get_user_model()
 
 # ---------- JobAdmin ----------
@@ -118,10 +118,20 @@ class ApplicationAdmin(admin.ModelAdmin):
         if obj.experience_value and obj.experience_unit:
             return f"{obj.experience_value} {obj.get_experience_unit_display()}"
         return '-'
+
     experience_summary.short_description = 'Work Experience'
+    experience_summary.admin_order_field = 'experience_months_sort'
 
     def get_queryset(self, request):
-        qs = super().get_queryset(request)
+        qs = super().get_queryset(request).annotate(
+            experience_months_sort=Case(
+                When(experience_unit='years', then=F('experience_value') * 12),
+                When(experience_unit='months', then=F('experience_value')),
+                default=0,
+                output_field=IntegerField(),
+            )
+        )
+
         if request.user.is_superuser:
             return qs
         return qs.filter(job__posted_by=request.user)
