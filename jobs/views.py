@@ -384,20 +384,27 @@ def dashboard(request):
     context = {'user_type': user_type}
 
     if user_type == 'student':
-        # 基础统计
         company_count = Company.objects.count()
         job_count = Job.objects.filter(status='approved').count()
+
+        job_application_stats = (
+            Job.objects.filter(status='approved')
+            .annotate(app_count=Count('applications'))
+            .order_by('-app_count')
+    )
+
+        hot_jobs = job_application_stats[:5]
+
+        chart_labels = [job.title for job in job_application_stats]
+        chart_data = [job.app_count for job in job_application_stats]
+
         context.update({
             'company_count': company_count,
             'job_count': job_count,
-        })
-
-        # 热门职位（按申请数量排序，取前5）
-        hot_jobs = Job.objects.filter(status='approved').annotate(
-            app_count=Count('applications')
-        ).order_by('-app_count')[:5]
-        context['hot_jobs'] = hot_jobs
-        pass
+            'hot_jobs': hot_jobs,
+            'chart_labels': chart_labels,
+            'chart_data': chart_data,
+    })
 
     elif user_type == 'employer':
         # 学生总数

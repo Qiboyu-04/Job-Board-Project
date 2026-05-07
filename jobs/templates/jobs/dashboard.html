@@ -18,6 +18,45 @@
     <p>Welcome, {{ user.username }}!</p>
 
     {% if user_type == 'student' %}
+        <div class="card mt-4">
+    <div class="card-body">
+        <h3>Job Application Statistics</h3>
+        <p>See which jobs have the most and fewest applications.</p>
+
+        <canvas id="jobApplicationChart"></canvas>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const jobLabels = {{ chart_labels|safe }};
+    const jobData = {{ chart_data|safe }};
+
+    const ctx = document.getElementById('jobApplicationChart');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: jobLabels,
+            datasets: [{
+                label: 'Number of Applications',
+                data: jobData,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+</script>
         <!-- 统计卡片 -->
         <div class="row">
             <div class="col-md-6">

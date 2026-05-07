@@ -51,13 +51,7 @@ class JobAdmin(admin.ModelAdmin):
         # Auto-set posted_by to current user
         if not change:  # When creating a new job
             obj.posted_by = request.user
-            # If user is not superuser, set company to their company
-            if not request.user.is_superuser:
-                company, _ = Company.objects.get_or_create(
-                    name=f"{request.user.username}'s Company",
-                    defaults={'created_by': request.user}
-                )
-                obj.company = company
+          
         super().save_model(request, obj, form, change)
 
     def is_within_deadline(self, obj):
